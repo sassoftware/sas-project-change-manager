@@ -1,0 +1,33 @@
+#Ignore any folders with these names
+build/
+.settings/
+.gradle/
+
+#Ignore any file with these extensions
+*.tmp
+*.bak
+*.swp
+
+# Eclipse Core
+.project
+
+# Build Script Configuration
+BuildScripts/remote_commands/example_run_resolved_failure_using_autoexec_sh_commands.txt
+BuildScripts/remote_commands/example_run_failed_sh_commands.txt
+BuildScripts/remote_commands/example_run_success_sh_commands.txt
+BuildScripts/remote_commands/remoteServer.properties
+BuildScripts/remote_commands/example_run_md5_changed_sh_commands.txt
+BuildScripts/remote_commands/example_run_success_with_warnings_due_to_whitelist_sh_commands.txt
+BuildScripts/remote_commands/example_run_warnings_fail_sh_commands.txt
+BuildScripts/remote_commands/example_run_conditional_autoexec_sh_commands.txt
+
+# Build/Test Configuration
+construct/project_change_manager/gradle.properties
+construct/project_change_manager/known_hosts
+
+# SASUnit (3rd party)
+construct/project_change_manager/src/test/sasunit
+
+# Deployment
+deploy/project_change_manager/gradle.properties
+deploy/project_change_manager/known_hosts
