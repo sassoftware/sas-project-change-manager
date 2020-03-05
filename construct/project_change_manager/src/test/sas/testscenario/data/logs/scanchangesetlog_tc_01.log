@@ -1,0 +1,56 @@
+1                                                          The SAS System                                15:50 Tuesday, May 17, 2016
+
+NOTE: Unable to open SASUSER.REGSTRY. WORK.REGSTRY will be opened instead.
+NOTE: All registry changes will be lost at the end of the session.
+
+NOTE: Unable to open SASUSER.PROFILE. WORK.PROFILE will be opened instead.
+NOTE: All profile changes will be lost at the end of the session.
+NOTE: Copyright (c) 2002-2012 by SAS Institute Inc., Cary, NC, USA. 
+NOTE: SAS (r) Proprietary Software 9.4 (TS1M2) 
+      Licensed to Yu s SAS 9.4 + RD + BR + VA, Site 70068118.
+NOTE: This session is executing on the Linux 2.6.32-504.3.3.el6.x86_64 (LIN X64) platform.
+
+NOTE: Updated analytical products:
+      
+      SAS/STAT 13.2 ERROR:
+      SAS/ETS 13.2
+      SAS/OR 13.2
+      SAS/IML 13.2
+
+To locate the name of your SAS Installation Representative go to http://support.sas.com/repfinder and provide your site number 
+70068118 and company name as Yu s SAS 9.4 + RD + BR + VA. On the SAS REP list provided, locate the REP for operating system LIN X64.
+NOTE: Additional host information:
+
+ Linux LIN X64 2.6.32-504.3.3.el6.x86_64 #1 SMP Tue Dec 16 12:12:30 PST 2014 x86_64 Oracle Linux Server release 6.6 
+
+You are running SAS 9. Some SAS 8 files will be automatically converted 
+by the V9 engine; others are incompatible.  Please see 
+http://support.sas.com/rnd/migration/planning/platform/64bit.html
+
+PROC MIGRATE will preserve current SAS file attributes and is 
+recommended for converting all your SAS libraries from any 
+SAS 8 release to SAS 9.  For details and examples, please see
+http://support.sas.com/rnd/migration/index.html
+
+
+This message is contained in the SAS news file, and is presented upon
+initialization.  Edit the file "news" in the "misc/base" directory to
+display site-specific news and information in the program log.
+The command line option "-nonews" will prevent this display.
+
+
+
+
+NOTE: SAS initialization used:
+      real time           0.05 seconds
+      cpu time            0.02 seconds
+      
+1          %put Create snapshot capabilities;
+Create snapshot capabilities
+NOTE: SAS Institute Inc., SAS Campus Drive, Cary, NC USA 27513-2414
+NOTE: The SAS System used:
+      real time           0.06 seconds
+      cpu time            0.04 seconds
+2                                                          The SAS System                                15:50 Tuesday, May 17, 2016
+
+      

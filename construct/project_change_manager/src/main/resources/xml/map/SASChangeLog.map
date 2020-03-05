@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ########################################################################## -->
+<!-- Copyright © 2020, SAS Institute Inc., Cary, NC, USA.  All Rights Reserved. -->
+<!-- SPDX-License-Identifier: Apache-2.0                                        -->
+<!-- ########################################################################## -->
+
+<!-- ############################################################ -->
+<!-- ChangeLog map for Project Change Manager changelog xml files. -->
+<!-- Ths map conforms to ChangeLog.xsd schema -->
+<!-- ############################################################ -->
+<SXLEMAP name="SAS_CHANGE_LOG" version="2.1">
+
+    <NAMESPACES count="1">
+        <NS id="1" prefix="p1">http://xml.pcm.sas.com/saschangelog</NS>
+        <NS id="2" prefix="p2">http://www.w3.org/2001/XMLSchema</NS>
+    </NAMESPACES>
+
+    <!-- ############################################################ -->
+    <TABLE description="sasChangeLog" name="sasChangeLog">
+        <TABLE-PATH syntax="XPathENR">/{1}sasChangeLog</TABLE-PATH>
+
+        <COLUMN name="sasChangeLog_logicalFilePath">
+            <PATH syntax="XPathENR">/{1}sasChangeLog/@logicalFilePath</PATH>
+            <DESCRIPTION>logicalFilePath</DESCRIPTION>
+            <TYPE>character</TYPE>
+            <DATATYPE>string</DATATYPE>
+            <LENGTH>1000</LENGTH>
+        </COLUMN>
+        <COLUMN name="sasChangeLog_schemaVersion">
+            <PATH syntax="XPathENR">/{1}sasChangeLog/@schemaVersion</PATH>
+            <DESCRIPTION>schemaVersion</DESCRIPTION>
+            <TYPE>character</TYPE>
+            <DATATYPE>string</DATATYPE>
+            <LENGTH>20</LENGTH>
+        </COLUMN>
+
+
+    </TABLE>
+
+    <!-- ############################################################ -->
+    <TABLE description="include" name="include">
+        <TABLE-PATH syntax="XPathENR">/{1}sasChangeLog/{1}include</TABLE-PATH>
+
+        <COLUMN name="include_file">
+            <PATH syntax="XPathENR">/{1}sasChangeLog/{1}include/@file</PATH>
+            <DESCRIPTION>file</DESCRIPTION>
+            <TYPE>character</TYPE>
+            <DATATYPE>string</DATATYPE>
+            <LENGTH>1000</LENGTH>
+        </COLUMN>
+        <COLUMN name="include_noautoexec">
+            <PATH syntax="XPathENR">/{1}sasChangeLog/{1}include/@noAutoexec</PATH>
+            <DESCRIPTION>noAutoexec</DESCRIPTION>
+            <TYPE>character</TYPE>
+            <DATATYPE>string</DATATYPE>
+            <LENGTH>1</LENGTH>
+        </COLUMN>
+
+
+    </TABLE>
+
+</SXLEMAP>

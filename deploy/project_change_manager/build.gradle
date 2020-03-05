@@ -1,0 +1,103 @@
+apply from: "base_build.gradle"
+
+buildscript {	
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath 'org.hidetake:gradle-ssh-plugin:0.3.10'
+	}
+}
+
+/* Tasks */
+
+
+task deployAll()  {
+	description = 'Deploy Project Change Manager to its install directory.'
+	if (DEPLOY_METHOD == 'remote') {
+		dependsOn cleanRemote, remoteUnzip
+	} else {
+		dependsOn copyExtractedZip
+	}
+}
+					
+task cleanUnitTestReport (group: 'build',
+							description: 'Deletes the unit test report.') {
+	// Will run twice with the current input/output setup.  At this point
+	// I'm not going to spend much time on fixing this. canczc.
+	// Does not do any cleaning on remote machine
+	inputs.dir "${buildDir}/sasunitresults"
+	outputs.dir "${buildDir}/sasunitresults"
+	
+	doLast {
+		delete "${buildDir}/sasunitresults"
+	}
+}
+
+// Do this in its own task.  Can't make it part of the configure zip task
+// otherwise it will may find the SASUnit executable file (i.e. for production deployments).
+// A seperate task is easier than injecting the token substitution in an existing task.
+task deploySASTestExecutable (type: SshTask,
+							description: 'Deploys SAS Test Code executable with tokens replaced',
+							dependsOn: [unzip]) {
+			
+	def sasunitBinLoc = "${PCM_INSTALL_DIR}/${archiveFQName}/test/sasunit/bin"
+	
+	session(remotes.remoteHost) {
+		println "Copying ${buildDir}/unpacked/${archiveFQName}/test/sasunit/bin/sasunit.sh to ${sasunitBinLoc}"
+		put("${buildDir}/unpacked/${archiveFQName}/test/sasunit/bin/sasunit.sh", "${sasunitBinLoc}")
+	}
+	
+	// Substitute the tokens with the appropriate values
+	doFirst {
+		def meta_tokens = [
+							"@SAS_HOME@":     				"${REMOTE_SAS_HOME}"
+				]
+		meta_tokens.each() {token_key, token_value -> ant.replace(file: "${buildDir}/unpacked/${archiveFQName}/test/sasunit/bin/sasunit.sh", token: token_key, value: token_value) };
+	}
+}
+					
+task runSASUnit(type: SshTask
+                  		,group: 'verification'
+						,description: 'Executes the SASUnit tests -- Only tested in *nix environments'
+						,dependsOn: [deploySASTestExecutable]
+						) {
+						
+	session(remotes.remoteHost) {
+		def sasunitBinLoc = "${PCM_INSTALL_DIR}/${archiveFQName}/test/sasunit/bin"
+		String stmt = "(cd "+sasunitBinLoc+";"+
+						"chmod u+x "+sasunitBinLoc+"/sasunit.sh;"+
+						sasunitBinLoc+"/sasunit.sh)"
+		
+		preExecuteSSH(stmt)
+		String result = execute(stmt) 
+		postExecuteSSH()
+		
+		if (result.contains("SAS ended with errors")) {
+			throw new GradleException("Errors encountered running tests.")
+		}
+		else if (result.contains("SAS ended with warnings")) {
+			throw new GradleException("Warnings encountered running tests.")
+		}
+		else {
+			println "Tests executed successfully.  Please check report for test results.\n\n"
+		}
+	}
+}
+
+task copySASUnitResults(type: SshTask
+                 		  ,group: 'verification'
+						  ,description: 'Copies SASUnit test results to local machine.'
+						  ,dependsOn: runSASUnit) {
+	session(remotes.remoteHost) {
+		String putSource = "${PCM_INSTALL_DIR}/${archiveFQName}/test/sasunit/doc"
+		String putDest = "${buildDir}/sasunitresults"
+		println "Copying ${putSource} to ${putDest}"
+		get("${putSource}", "${putDest}")
+	}
+}
+				
+task unitTests(group: 'verification'
+				,description: 'Runs the unit tests and opens a report.'
+				,dependsOn: copySASUnitResults) {
+}

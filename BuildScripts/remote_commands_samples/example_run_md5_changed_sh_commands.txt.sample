@@ -1,0 +1,3 @@
+cd /tmp/project_change_manager_dist-1.0/example/md5_changed/bin/;
+echo <password> | sudo -S chmod 744 pcm.sh;
+./pcm.sh;

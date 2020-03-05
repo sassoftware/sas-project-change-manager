@@ -1,0 +1,228 @@
+apply plugin: 'ssh'
+
+def srcDir = 'src/main'
+def testDir = 'src/test'
+def SASVersion = '9.4'
+def majorVersion=1
+def minorVersion=0
+
+version=1.0
+apply from: 'packaging.gradle'
+
+buildscript {
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath 'org.hidetake:gradle-ssh-plugin:0.3.10'
+	}
+}
+
+// Define remote deploy machine for remote SASUnit deployment
+remotes {
+	remoteHost {
+		if (SAS_CODE_ON_SHARED_VM.toString().toLowerCase() == "true") {
+			host = REMOTE_HOST
+		    user = REMOTE_USER
+			password = REMOTE_PASSWORD
+			knownHosts = file("${projectDir}/known_hosts")
+		}
+		else { //use dummy variables if environment does not use a VM - this will not be used but must be configured
+			host = "dummy"
+		    user = "dummy"
+			password = "dummy"
+		}
+	}
+}
+
+String installScriptBreak = "==========================================================="
+
+def preExecuteSSH = { executeStatement ->
+	println "\n<<<" + installScriptBreak
+	println("Executing \"" + executeStatement + "\" in a UNIX environment")
+}
+
+//Prints a break to delineate SSH SAS BookRunner Installer gradle build from this one
+def postExecuteSSH = {
+	println installScriptBreak + ">>>\n"
+}
+
+task copyLicense (type:Copy,
+					group: 'build',
+					description: 'Copies the license to the archive') {
+	from(files(new File("${projectDir}/../..")))
+	include "LICENSE"
+	into("${buildDir}")
+}
+
+task copyDocs (type:Copy,
+				group: 'build',
+				description: 'Copies the docs to the archive') {
+    outputs.upToDateWhen { false } // workaround for http://issues.gradle.org/browse/GRADLE-1646  - does not respect tokens
+	
+	from(files(new File("${projectDir}/src/docs")))
+	into("${buildDir}")
+}
+
+task compileSASCode (type: Copy,
+					group: 'build',
+					description: 'Compiles runtime sas code.') {
+	from(files(new File("${srcDir}/sas")))
+	into("${buildDir}/sas")
+}
+
+task processExamples (type: Copy,
+						group: 'build',
+						description: 'Copies examples into build directory.') {
+	from(files(new File("example")))
+	exclude "**/gitkeep.txt"
+	into "${buildDir}/example"
+}
+
+task processResources (type: Copy,
+						group: 'build',
+						description: 'Copies resources into one area.') {
+	from(files(new File("${srcDir}/resources")))
+	into "${buildDir}/sas"
+}
+	
+task build (group: 'build',
+			description: 'Assembles this project.',
+			dependsOn: assemble) << {
+	// Will not be cached as up-to-date even if dependsOn tasks are all up-to-date.
+	// I did not spend any time on this. canczc.
+} 
+
+			/******  TEST ******/
+			
+task compileSASUnit (type: Copy,
+						group: 'verification',
+						description: 'Compiles sasunit.') {
+	
+	// Check for the root sasunit directory
+	def sasunitDir = new File("${testDir}/sasunit")
+	def dirExists = sasunitDir.exists()
+	
+	if (!dirExists) {
+		println("ERROR: SASUnit was not found.  Please review CONTRIBUTING.md for instructions on downloading SASUnit.");
+		throw new GradleException("ERROR: Unable to copy SASUnit - not found. Please review CONTRIBUTING.md for instructions on downloading SASUnit.")
+	}
+	
+	// Check for any expected file.  This should effectively test that SASUnit was extracted to the correct directory
+	def sasunitMacroFile = new File("${testDir}/sasunit/saspgm/sasunit/runsasunit.sas")
+	def fileExists = sasunitMacroFile.exists()
+	
+	if (!fileExists) {
+		println("ERROR: SASUnit directory was found but a file was not found in the expected path.  Please review CONTRIBUTING.md for instructions on extracting SASUnit.");
+		throw new GradleException("ERROR: Expected file \'${testDir}/sasunit/saspgm/sasunit/runsasunit.sas\' was not found. Please review CONTRIBUTING.md for instructions on extracting SASUnit.")
+	}  
+	
+	from(files(sasunitDir))
+	into("${buildDir}/test/sasunit")
+}
+
+task compileSASTestCode (type: Copy,
+						group: 'build',
+						description: 'Compiles test sas code into one area.',
+						dependsOn: [compileSASUnit, assemble]) {
+	from(files(new File("${testDir}/sas")))
+	into("${buildDir}/test/sasunit")
+}
+						
+task distTest (group: 'verification'
+				,description: 'Bundles the project as a distribution and compiles the test code'
+				, dependsOn: [distZip,compileSASTestCode]) {
+}
+			
+			//******   DEVELOPER TASKS (VM with shared SAS Code) ********//
+			
+task sharedClean (group: 'build',
+					description: 'Cleans the shared deploy directory') {
+							
+	delete "${VM_SHARED_DIR}/project_change_manager"
+}	
+			
+task sharedDeploySASCode (type: Copy,
+							group: 'build',
+							description: 'Deploys SAS Code to the shared VM directory',
+							dependsOn: [compileSASTestCode, sharedClean]) {
+							
+	from "${buildDir}/sas"
+	into "${VM_SHARED_DIR}/project_change_manager/sas"
+	
+	// Substitute the tokens with the appropriate values
+	doFirst {
+		def meta_tokens = [
+							"@SAS_HOME@":        "${REMOTE_SAS_HOME}",
+				]
+		meta_tokens.each() {token_key, token_value -> ant.replace(file: "${buildDir}/test/sasunit/bin/sasunit.sh", token: token_key, value: token_value) };
+	}
+}
+			
+task sharedDeploySASUnit (type: Copy,
+							group: 'verification',
+							description: 'Deploys SAS Test Code to the shared VM directory',
+							dependsOn: [compileSASTestCode, sharedDeploySASCode]) {
+	
+	from(files(new File("${buildDir}/test/sasunit")))
+	into "${VM_SHARED_DIR}/project_change_manager/sas/sasunit"
+}
+					
+task sharedRunSASUnit(type: SshTask
+                  		,group: 'verification'
+						,description: 'Executes the SASUnit tests -- Only tested in *nix environments'
+						,dependsOn: sharedDeploySASUnit
+						) {
+						
+	session(remotes.remoteHost) {
+		String stmt = "(cd ${REMOTE_EXECUTABLE_PATH};"+
+						"${REMOTE_EXECUTABLE_PATH}/sasunit.sh)"
+		
+		preExecuteSSH(stmt)
+		String result = execute(stmt) 
+		postExecuteSSH()
+		
+		if (result.contains("SAS ended with errors")) {
+			throw new GradleException("Errors encountered running tests.")
+		}
+		else if (result.contains("SAS ended with warnings")) {
+			throw new GradleException("Warnings encountered running tests.")
+		}
+		else {
+			println "Tests executed successfully.  Please check report for test results.\n\n"
+		}
+	}
+}
+						  
+task sharedShowUnitTestReport(group: 'verification'
+				,description: 'Opens SASUnit test results in a browser window.'
+				,dependsOn: sharedRunSASUnit) << {
+	java.awt.Desktop.desktop.browse "file:///${VM_SHARED_DIR}/project_change_manager/sas/sasunit/doc/rep/index.html".toURI()
+}
+				
+task sharedUnitTests(group: 'verification'
+				,description: 'Runs the unit tests and opens a report.'
+				,dependsOn: sharedShowUnitTestReport) {
+}
+
+// Exclude shared* tasks if this environment is not set up to use a vm with a shared SAS code directory
+if (SAS_CODE_ON_SHARED_VM.toString().toLowerCase() == "true") {
+	println "SAS code resides on a shared directory in a local vm"
+} else {
+	println "SAS code does NOT reside on a shared directory in a local vm"
+	// Collect all tasks related to a vm with a shared directory
+	Collection sharedTasks = new ArrayList()
+	for (task in project.tasks) {
+		if (task.name.size() >= 6 && task.name.substring(0,6) == "shared") {
+			sharedTasks.add(task)
+		}
+	}
+	// Remove those tasks
+	for (task in sharedTasks)
+		tasks.remove(task)
+}
+
+
+assemble.dependsOn(compileSASCode)
+assemble.dependsOn(processResources)
+assemble.dependsOn(processExamples)

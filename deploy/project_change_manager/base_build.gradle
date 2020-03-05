@@ -1,0 +1,154 @@
+apply plugin: 'ssh'
+
+/**
+ * Configure and deploy sas
+*/
+ext.archiveFQName = "${SOURCE_ARCHIVE_NAME}-${VERSION}"
+String installScriptBreak = "==========================================================="
+
+buildscript {	
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath 'org.hidetake:gradle-ssh-plugin:0.3.10'
+	}
+}
+
+remotes {
+	remoteHost {
+	host = REMOTE_HOST
+	port = hasProperty('REMOTE_PORT') ? REMOTE_PORT : 22
+    user = REMOTE_USER
+	password = REMOTE_PASSWORD
+	knownHosts = file("${projectDir}/known_hosts")
+	}
+}
+
+/* Methods to execute a statement on the SAS BookRunner Installer */
+
+// Prints a break to delineate SSH SAS BookRunner Installer gradle build from this one
+ext.preExecuteSSH = { executeStatement ->
+	println "\n<<<" + installScriptBreak
+	println("Executing \"" + executeStatement + "\" in a " + DEPLOY_OS + " environment")
+}
+
+//Prints a break to delineate SSH SAS BookRunner Installer gradle build from this one
+ext.postExecuteSSH = {
+	println installScriptBreak + ">>>\n"
+}
+
+
+/* Tasks */
+
+task unzipDist(type: Copy,
+				description: 'Extract the constructed archive file for later repackaging with configuration files') {
+	def zipFile = file("${DISTRIBUTION_DIR}/${archiveFQName}.zip")
+	def outputDir = file("${buildDir}/unpacked")
+	
+	from zipTree(zipFile)
+	into outputDir
+}
+
+task configureZip(type: Zip,
+					description: 'Repackage the distribution archive with configuration completed'
+					,dependsOn: unzipDist
+					) {
+	archiveName="${archiveFQName}.zip"
+	from ("${buildDir}/unpacked/${archiveFQName}") {
+		exclude('gradlew') //exclude this.  It needs explicit permissions
+	}
+	from ("${buildDir}/unpacked/${archiveFQName}") {
+		include('gradlew') //gradlew needs execute permissions
+		fileMode 0755
+	}
+	from ("build.conf")
+	into ("${archiveFQName}")
+	destinationDir = file("${buildDir}/dist")
+}
+
+task remoteDeployZip(type: SshTask
+					,description: 'Deploys the archive file to a remote machine'
+					,dependsOn: configureZip) {
+	session(remotes.remoteHost) {
+		println "Copying ${buildDir}/dist/${archiveFQName}.zip to ${PCM_INSTALL_DIR}"
+		println "${archiveFQName}.zip"
+		put("${buildDir}/dist/${archiveFQName}.zip", "${PCM_INSTALL_DIR}")
+	}
+}
+
+task copyExtractedZip(type: Copy,
+			dependsOn: configureZip) {
+	from zipTree(file("${buildDir}/dist/${archiveFQName}.zip"))
+	into "${PCM_INSTALL_DIR}"
+}
+
+
+task deployArchive(
+				description: 'Deploy the BrV12 SAS resources') {
+	
+	if (DEPLOY_METHOD == 'remote') {
+		dependsOn remoteDeployZip
+		println "Configured to deploy the SAS archive remotely to ${PCM_INSTALL_DIR} on ${DEPLOY_OS}"
+	} else {
+		dependsOn copyExtractedZip
+		println "Configured to deploy the SAS archive using copy to ${PCM_INSTALL_DIR}"
+    }
+	
+	doLast {
+		println "Completed deploying the archive"
+	}
+
+}
+
+task remoteUnzip(type: SshTask,
+			description: 'Extract the archive file from the remote host'
+			,dependsOn: remoteDeployZip
+			) {
+	session(remotes.remoteHost) {
+		println "Extracting zip"
+		String stmt = "unzip -oq ${PCM_INSTALL_DIR}/${archiveFQName}.zip -d ${PCM_INSTALL_DIR}"
+		preExecuteSSH(stmt)
+		execute(stmt)
+		postExecuteSSH()
+	}
+}
+
+task unzip(description: 'Extracts the archive file.') {
+	if (DEPLOY_METHOD == 'remote') {
+		dependsOn remoteUnzip
+	} else {
+		dependsOn copyExtractedZip
+	}
+}
+					
+task clean (group: 'build',
+			description: 'Deletes the project build directory.') {
+	// Will run twice with the current input/output setup.  At this point
+	// I'm not going to spend much time on fixing this. canczc.
+	// Does not do any cleaning on remote machine
+	inputs.dir buildDir
+	outputs.dir buildDir
+	
+	doLast {
+		delete buildDir
+	}
+}
+			
+task cleanRemoteZip (type: SshTask
+                  	,group: 'build'
+					,description: 'Deletes the deployed zip archive and temporary files from the remote machine') {
+	session(remotes.remoteHost) {		
+		println "Deleting remote files"
+		// Delete the archive, as well as the extracted files
+		String stmt = "(rm ${PCM_INSTALL_DIR}/${archiveFQName}.zip; rm -rf ${PCM_INSTALL_DIR}/${archiveFQName})"
+		preExecuteSSH(stmt)
+		execute(stmt)
+		postExecuteSSH()
+	}
+}
+					
+task cleanRemote (group: 'build'
+					,description: 'Deletes the deployed archive and temporary files from the remote machine') {
+		dependsOn cleanRemoteZip
+}

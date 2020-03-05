@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sasChangeLog
+	xmlns="http://xml.pcm.sas.com/saschangelog"
+	logicalFilePath="/com/sas/pcm/test/readchangelog_xml_tc12.xml"
+	schemaVersion="2018.07"
+>
+	<include file="/somedirectory/somefile.sas"/>
+	<include file="anotherfile.sas"/>
+</sasChangeLog>

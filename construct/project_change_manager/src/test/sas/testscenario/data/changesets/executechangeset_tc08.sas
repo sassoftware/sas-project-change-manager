@@ -1,0 +1,1 @@
+%put NOTE: g_pcm_root is "&g_pcm_root.";

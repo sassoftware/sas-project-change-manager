@@ -1,0 +1,17 @@
+apply plugin: 'distribution'
+
+distributions {
+	
+	main {
+		baseName = 'project_change_manager_dist'
+		contents {
+			from ("${buildDir}") {
+					exclude 'distributions'
+			}
+		}
+	}
+}
+
+distZip.dependsOn {
+	[build, copyLicense, copyDocs]
+}

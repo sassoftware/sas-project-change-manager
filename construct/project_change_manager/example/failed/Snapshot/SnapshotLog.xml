@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ########################################################################## -->
+<!-- Copyright © 2020, SAS Institute Inc., Cary, NC, USA.  All Rights Reserved. -->
+<!-- SPDX-License-Identifier: Apache-2.0                                        -->
+<!-- ########################################################################## -->
+
+<sasChangeLog
+	xmlns="http://xml.pcm.sas.com/saschangelog"
+	logicalFilePath="/com/sas/bookrunner/snapshot/SnapshotLog.xml"
+	schemaVersion="2018.07"
+>
+	<include file="/01_successfulProgram.sas"/>
+	<include file="/02_errorProgram.sas"/>
+	<include file="/03_notRunProgram.sas"/>
+</sasChangeLog>

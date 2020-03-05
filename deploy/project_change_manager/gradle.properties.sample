@@ -1,0 +1,17 @@
+// set this to any temporary directory that the sas app will deploy to
+// Used if an ssh client is used on the deploy OS (e.g. Cygwin for windows)
+PCM_INSTALL_DIR=/tmp
+DISTRIBUTION_DIR=../../construct/project_change_manager/build/distributions
+SOURCE_ARCHIVE_NAME=project_change_manager_dist
+VERSION=1.0
+
+// Either copy or remote
+DEPLOY_METHOD=remote
+// Either UNIX or WINDOWS
+DEPLOY_OS=UNIX
+
+REMOTE_HOST=<ip-address>
+REMOTE_USER=<username>
+REMOTE_PASSWORD=<password>
+
+REMOTE_SAS_HOME=/sas/SASHome

@@ -1,0 +1,5 @@
+cd /tmp/project_change_manager_dist-1.0/example/resolved_failure_using_autoexec/bin/;
+echo <password> | sudo -S chmod 744 01_pcm_fail.sh;
+echo <password> | sudo -S chmod 744 02_pcm_success.sh;
+./01_pcm_fail.sh;
+./02_pcm_success.sh;

@@ -1,0 +1,14 @@
+// Set this to true if SAS code resides on a shared directory on a local VM
+// This will enable a set of tasks (prefix by "shared*") that will allow for speedier test deployment and execution
+// If true, the VM_*, REMOTE*, and SASUNIT* attributes must be set
+SAS_CODE_ON_SHARED_VM=true
+
+// set this to the location of the shared directory of your SAS vm
+VM_SHARED_DIR=D:/vms/9.4/SAS/shared_sas/sas
+// set this to the VM IP and credentials
+REMOTE_HOST=<ip-address>
+REMOTE_USER=<username>
+REMOTE_PASSWORD=<password>
+// set this to the SSASUNIT bin directory of the vm
+REMOTE_SAS_HOME=/sas/SASHome
+REMOTE_EXECUTABLE_PATH=/mnt/myhgfs/shared_sas/sas/project_change_manager/sas/sasunit/bin

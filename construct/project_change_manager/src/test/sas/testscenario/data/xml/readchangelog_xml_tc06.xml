@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sasChangeLog
+	xmlns="http://xml.pcm.sas.com/saschangelog"
+	schemaVersion="2018.07"
+>
+	<include file="/somedirectory/somefile.sas"/>
+</sasChangeLog>

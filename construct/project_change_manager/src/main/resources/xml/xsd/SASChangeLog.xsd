@@ -1,0 +1,60 @@
+<!-- ########################################################################## -->
+<!-- Copyright © 2020, SAS Institute Inc., Cary, NC, USA.  All Rights Reserved. -->
+<!-- SPDX-License-Identifier: Apache-2.0                                        -->
+<!-- ########################################################################## -->
+
+<xs:schema targetNamespace="http://xml.pcm.sas.com/saschangelog"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	attributeFormDefault="unqualified"
+	elementFormDefault="qualified"
+>
+  <xs:element name="sasChangeLog">
+    <xs:complexType>
+      
+      <xs:sequence>
+      
+        <xs:element name="include" maxOccurs="unbounded" minOccurs="0">
+          <xs:complexType>
+            <xs:simpleContent>
+              <xs:extension base="xs:string">
+                <xs:attribute name="file" use="required">
+              	  <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                  	  <xs:maxLength value="1000"/>
+                    </xs:restriction>
+              	  </xs:simpleType>
+                </xs:attribute>
+                <xs:attribute name="noAutoexec" use="optional">
+                  <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                      <xs:maxLength value="1"/>
+                    </xs:restriction>
+                  </xs:simpleType>
+                </xs:attribute>
+              </xs:extension>
+            </xs:simpleContent>
+          </xs:complexType>
+        </xs:element>
+      
+      </xs:sequence>
+      
+      <xs:attribute name="logicalFilePath" use="required">
+      	<xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:maxLength value="1000"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+      
+	  <!-- Current version is 2018.07 -->
+      <xs:attribute name="schemaVersion" use="required">
+      	<xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:maxLength value="20"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+      
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
