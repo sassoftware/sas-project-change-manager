@@ -1,11 +1,11 @@
 # Project Change Manager
 
 ## Overview
-Project Change Manager is a project change management tool. The Project Change Manager manages manage your project's SAS assets and sets them to a known state.  Do not make the same change twice and view an audit table to track changes.  The Project Change Manager is inspired by [Liquibase](https://www.liquibase.org/). It includes several examples on how to make the best use of the Project Chanage Manager. 
+Project Change Manager is a project change management tool. The Project Change Manager manages your project's SAS assets and sets them to a known state.  Do not make the same change twice and view an audit table to track changes.  The Project Change Manager is inspired by [Liquibase](https://www.liquibase.org/). It includes several examples on how to make the best use of the Project Chanage Manager. 
 
 It is currently being developed on Linux SAS remotely. It can be enhanced to run on Windows or locally with only minor modifications.
 
-Project Change Manager is a set of a SAS programs and macros that is read as input into an XML changelog. The XML changelog, which lists the changesets (SAS programs) to be executed. Each changeset has its log file redirected to a common log directory, and its execution will be logged in a databasechangelog data set. A changeset can run only once. By reviewing the databasechangelog, you can quickly gather information to determine the state of your SAS assets. By reviewing the logs, you can review the outcome of each changeset.
+Project Change Manager is a set of a SAS programs and macros that is read as input into an XML changelog. The XML changelog lists the changesets (SAS programs) to be executed. Each changeset has its log file redirected to a common log directory, and its execution will be logged in a databasechangelog data set. A changeset can run only once. By reviewing the databasechangelog, you can quickly gather information to determine the state of your SAS assets. By reviewing the logs, you can review the outcome of each changeset.
 
 ### Prerequisites
 - SAS 9.4 or above
@@ -14,7 +14,8 @@ Project Change Manager is a set of a SAS programs and macros that is read as inp
 ### Installation
 The distribution can be found in the bin directory.  Download the appropriate archive file and extract to your SAS server.
 
-* _project\_change\_manager\_dist-1.0.zip_ - for Windows
+* _project\_chan
+_e\_manager\_dist-1.0.zip_ - for Windows
 
 * _project\_change\_manager\_dist-1.0.tar_ - for Linux
 
@@ -109,7 +110,7 @@ Here is an example of using Project Change Manager using gradle.
 ### Creating a changeset
 A changeset is a SAS program. A changeset can be as simple or complex as you make it. A good principle to follow is to make sure you have lots of informative put statements in case you need to review the logs.
 
-When a changeset is executed Project Change Manager will pass it a global macrovariable g_pcm_root, which can then be used in the changeset. This is the root location of Project Change Manager as defined by the **PCM_ROOT** environment variable.
+When a changeset is executed Project Change Manager will pass it a global macrovariable _g\_pcm\_root_, which can then be used in the changeset. This is the root location of Project Change Manager as defined by the **PCM\_ROOT** environment variable.
 
 Although a changeset is limited to being a SAS program, SAS programs themselves can use the [system function](https://go.documentation.sas.com/?docsetId=lefunctionsref&docsetTarget=p028ivnihf9y1hn1n05tp55587jz.htm&docsetVersion=9.4&locale=en) to invoke OS commands. A potential enhancement could be to broaden what could be executed as a changeset.  This leaves a broad range of possibilities, such as managing directories and files, invoking gradle targets, and executing other command line tools.  
 
