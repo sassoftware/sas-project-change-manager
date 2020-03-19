@@ -14,8 +14,7 @@ Project Change Manager is a set of a SAS programs and macros that is read as inp
 ### Installation
 The distribution can be found in the bin directory.  Download the appropriate archive file and extract to your SAS server.
 
-* _project\_chan
-_e\_manager\_dist-1.0.zip_ - for Windows
+* _project\_change\_manager\_dist-1.0.zip_ - for Windows
 
 * _project\_change\_manager\_dist-1.0.tar_ - for Linux
 
@@ -50,7 +49,7 @@ See the examples for shell scripts that invoke Project Change Manager, as well a
 
 * **print** - Defines the location for the Project Change Manager LISTING output file.
 
-* **insert** - Used to add Project Change Manager macros to the SASAUTOS system option, for example, `-insert SASAUTOS $PCM\_ROOT/sas`.
+* **insert** - Used to add Project Change Manager macros to the SASAUTOS system option, for example, `-insert SASAUTOS $PCM_ROOT/sas`.
 
 * **initstmt** - Used to assign the g\_changeLog macrovariable to the path to the _changelog_, for example, `-initstmt "%LET g_changeLog=<pathToChangelog/changelog.xml;"`.
 
