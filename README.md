@@ -19,6 +19,199 @@ The distribution can be found in the bin directory.  Download the appropriate ar
 * _project\_change\_manager\_dist-1.0.tar_ - for Linux
 
 ---
+## Table of Contents
+[Getting Started with Project Change Manager](#getting-started-with-project-change-manager)
+
+  - [Downloading and Deploying the ZIP File](#downloading-and-deploying-the-zip-file)
+  - [Using the Success Example Project](#using-the-success-example-project)
+    * [Review the Example Project](#review-the-example-project)
+    * [Run the *Example Project*](#run-the-example-project)
+    * [Investigating the Logs](#investigating-the-logs)
+    * [Investigating the databasechangelog](#investigating-the-databasechangelog)
+  - [Other examples](#other-examples)
+    * [Conditional\_autoexec](#conditional_autoexec)
+    * [Failed](#failed)
+    * [Md5\_changed](#md5_changed)
+    * [Resolved\_failure\_using\_autoexec](#resolved_failure_using_autoexec)
+    * [Success\_with\_warnings\_due\_to\_whitelist](#success_with_warnings_due_to_whitelist)
+    * [Warnings\_fail](#warnings_fail)
+
+[Running Project Change Manager](#running-project-change-manager)
+
+  - [Environment variables](#environment-variables)
+  - [SAS command options](#sas-command-options)
+  - [Integration with gradle](#integration-with-gradle)
+
+[Defining a Project Change Manager Changelog](#defining-a-project-change-manager-changelog)
+
+  - [Creating a changelog](#creating-a-changelog)
+  - [Creating a changeset](#creating-a-changeset)
+  - [How the changelog is processed](#how-the-changelog-is-processed)
+  - [Failure handling](#failure-handling)
+  - [Changeset validation](#changeset-validation)
+
+[Contributing](#contributing)
+
+[License](#license)
+
+[Additional Resources](#additional-resources)
+
+---
+### Getting Started with Project Change Manager
+
+This is a step-by-step guide to downloading, configuring and running one of the examples from Project Change Manager. 
+It will also highlight some of the key features to review, such as log messages and the change tracking databasechangelog data set.
+
+
+### Downloading and Deploying the ZIP File
+
+1.  Select the latest version of the ZIP or TAR archive file by navigating to
+    <https://github.com/sassoftware/sas-project-change-manager/tree/master/bin>
+    and clicking on the desired file.
+
+2.  Click the Download button to download the archive file to your local machine. 
+
+
+    > ![image](/README/images/01_Download.png)
+
+3.  Copy the archive file to a location accessible to your SAS installation and extract the contents. 
+The contents of the file contains an example directory and a sas directory. 
+The example directory contains example projects that you can run to explore the features of Project Change Manager. 
+The sas directory contains the source code of Project Change Manager.
+
+    > ![image](/README/images/02_01_SnapshotLog.png)
+
+### Using the Success Example Project
+
+You can start familiarizing yourself with the Project Change Manager by reviewing the example project called *success*.
+
+#### Review the Example Project
+
+1.  Navigate to the success directory. 
+
+    **Note:** The success directory contains a README.txt file which contains a brief summary of the example's contents. 
+
+The changelog for the success example project can be found in *success/Snapshot/SnapshotLog.xml*.
+
+> ![image](/README/images/02_DirectoryContents.png)
+
+The xml namespace (**xmlns**) must match what Project Change Manager expects. 
+The **logicalFilePath** is an arbitrary string that uniquely identifies a changelog. 
+Its value will be recorded in the databasechangelog with each associated changeset. 
+The **schemaVersion** defines which version of the schema the changlog is using.
+
+
+The **include** tags define the locations of the changesets relative to the changelog. 
+Note that one of the changesets force any autoexec program not to run. 
+You may view the contents of the changesets in the example which contain a PUT statement. 
+
+#### Run the *Example Project*
+
+2.  Navigate to the *bin* directory and open *pcm.sh* for editing. 
+You may need to modify the environment variables to match them to your environment.
+
+
+    > ![image](/README/images/03_shellscript.png)
+
+**PCM\_ROOT**, **PCM\_LOG\_ROOT**, **PCM\_CHANGESET\_AUTOEXEC**, and **PCM\_INSTALLS\_LOC** are defined relative to Project Change Manager's location and should not be modified. 
+
+Update **PCM\_SAS\_HOME** to the path of [SASHome](https://go.documentation.sas.com/?docsetId=hostunx&docsetTarget=p0u0ajlfxnn4myn17shsse44b2r2.htm&docsetVersion=9.4&locale=en).
+Update **PCM\_SAS\_VERSION** to your SAS version, although 9.4 is the only supported version of SAS.
+
+3.  Run the changes for this example by executing *pcm.sh* from the bin directory. 
+    
+**Note:** You may have to grant execute permissions for your user. 
+If running on Windows a comparable batch script will need to be created.
+
+> ![image](/README/images/04_execute_success.png)
+
+This example shell script will only report errors and warnings. 
+If there are no message, then the example ran successfully.
+
+#### Investigating the Logs
+
+The following example displays that logs are written to the log
+directory within the success example. 
+The location is defined in the *pcm.sh* shell script using the environment variable **PCM\_LOG\_ROOT**.
+Once successfully executed, four log files are displayed. 
+Each file name is prefixed with an [ISO 8601 formatted](https://go.documentation.sas.com/?docsetId=leforinforref&docsetTarget=n1vfxvbhrvzahjn1iciq1vruyc9d.htm&docsetVersion=9.4&locale=en) datetime stamp of when the corresponding program completed.
+
+-   The log file for the main pcm program is *\<datetime\>\_pcm.log*.
+
+-   The remaining logs are for changesets which are defined in the     changelog. 
+The contents of the changeset log files, for this example, are simple PUT statement outputs. 
+Review the *\<datetime\>\_pcm.log* which displays more interesting contents.
+
+    > ![image](/README/images/05_log_directory.png)
+
+4.  Open the log file and search for the string "NOTE:(PrjChngMgr)".
+    This is the key term that helps differentiate Project Change Manager
+    log output from other standard SAS output.
+
+    > ![image](/README/images/06_pcm_log.png)
+
+
+By examining these log messages, you can see what Project Change Manager is doing. 
+In this example, it first creates the *databasechangelog* and *databasechangeloglock* data sets. 
+It then reads the changelog and executes each changeset. 
+The changesets are executed in a separate process and their log contents are each output to a separate log. 
+You can see a message indicating that a changeset is about to be executed, and another message when a changeset has completed.
+
+> ![image](/README/images/07_pcm_log_messages.png)
+
+After running each changeset, the Project Change Manager tool inserts a record into the databasechangelog to indicate that the changeset was executed successfully.
+
+#### Investigating the databasechangelog
+
+In this example, the databasechangelog data sets are written to the installs directory within the success example. 
+This location is defined in the *pcm.sh* shell script using the environment variable **PCM\_INSTALLS\_LOC**. 
+Three entries are created in the databasechangelog once the shell script executes successfully.
+
+> ![image](/README/images/09_databasechangelog.png)
+
+Each changeset has a record, with the changeset defined by the *changeset* variable. 
+The *logical\_changelog* is defined by the changelog that contains the changesets, and so is the same for all three records. 
+The *status* will indicate the status of the changeset. 
+In this case, each changeset was EXECUTED successfully. 
+The *MD5Sum* is a checksum derived from the contents of the changeset. 
+If the changeset was modified and executed again, the Project Change Manager tool detects the change and log an error.
+
+### Other examples
+
+#### Conditional\_autoexec
+
+The **PCM\_CHANGESET\_AUTOEXEC** environment variable enables you to define an autoexec that runs before each changeset. 
+However, you can optionally define a changeset to skip the autoexec. 
+The conditional\_autoexec example highlights that feature.
+
+#### Failed
+
+This example illustrates a result when a changeset has an error.
+
+#### Md5\_changed
+
+This example contains preloaded records in the databasechangelog for a changeset. 
+However, MD5Sum is different.
+
+#### Resolved\_failure\_using\_autoexec
+
+This example contains two shell scripts which does the following:
+
+-   The first shell script defines an autoexec.
+
+-   The second shell script executes without an autoexec and results in one of the changesets failing. 
+When this script runs again, it uses the autoexec from the first shell script thus resulting in the changeset in executing successfully.
+
+#### Success_with_warnings_due_to_whitelist
+
+The Project Change Manager tool will fail in execution if there are warnings in a changeset. 
+This example illustrates the common warnings that are exempt.
+
+#### Warnings\_fail
+
+This example highlights a changelog which will fail if any of the changesets contains a warning.
+
+---
 ## Running Project Change Manager
 Project Change Manager is invoked by running a SAS program, pcm.sas in batch mode. pcm.sas requires a combination of the following:
 * Environment variables. 
